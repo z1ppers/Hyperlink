@@ -1,0 +1,554 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BLADE HYPERLINK MAKER</title>
+    <style>
+        :root {
+            --primary-glow: rgb(76, 0, 255);
+            --secondary-glow: rgb(0, 225, 255);
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            margin: 0;
+            padding: 20px 0;
+            background: #000;
+            color: #fff;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            overflow-x: hidden;
+            position: relative;
+        }
+
+        @keyframes twinkle {
+            0%, 100% { opacity: 0.2; transform: scale(1); }
+            50% { opacity: 1; transform: scale(1.5); }
+        }
+
+        @keyframes shooting {
+            0% {
+                transform: translateX(-100px) translateY(-100px) rotate(45deg);
+                opacity: 0;
+            }
+            10% { opacity: 1; }
+            70% { opacity: 1; }
+            100% {
+                transform: translateX(calc(100vw + 100px)) translateY(calc(100vh + 100px)) rotate(45deg);
+                opacity: 0;
+            }
+        }
+
+        .stars {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        .star {
+            position: absolute;
+            background: #fff;
+            border-radius: 50%;
+            animation: twinkle ease-in-out infinite;
+            will-change: transform, opacity;
+        }
+
+        .shooting-star {
+            position: absolute;
+            width: 100px;
+            height: 2px;
+            background: linear-gradient(90deg, rgba(255,255,255,0), #fff, rgba(255,255,255,0));
+            border-radius: 50%;
+            filter: drop-shadow(0 0 6px #fff);
+            animation: shooting linear infinite;
+            will-change: transform;
+        }
+
+        .container {
+            background: rgba(0, 0, 0, 0.9);
+            border-radius: 15px;
+            padding: 30px;
+            width: 100%;
+            max-width: 500px;
+            box-shadow:
+                0 8px 32px rgba(var(--primary-glow), 0.3),
+                0 4px 16px rgba(var(--secondary-glow), 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            position: relative;
+            z-index: 2;
+        }
+
+        h1 {
+            text-align: center;
+            font-size: 28px;
+            margin-bottom: 30px;
+            background: linear-gradient(90deg, var(--primary-glow), var(--secondary-glow));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-shadow: 0 0 10px rgba(255, 255, 255, 0.3);
+        }
+
+        label {
+            display: block;
+            margin: 15px 0 8px;
+            font-size: 16px;
+            color: #ddd;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        input[type="text"] {
+            width: 100%;
+            padding: 12px 15px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            font-size: 16px;
+            background: rgba(0, 0, 0, 0.5);
+            color: #fff;
+            transition: all 0.3s ease;
+            box-sizing: border-box;
+        }
+
+        input[type="text"]:focus {
+            outline: none;
+            border-color: var(--secondary-glow);
+            box-shadow: 0 0 10px rgba(var(--secondary-glow), 0.5);
+        }
+
+        .format-select-container {
+            position: relative;
+            width: 100%;
+            margin-bottom: 20px;
+        }
+
+        .format-select {
+            width: 100%;
+            padding: 15px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            font-size: 16px;
+            background: rgba(0, 0, 0, 0.5);
+            color: #fff;
+            cursor: pointer;
+            appearance: none;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .format-select:focus {
+            outline: none;
+            border-color: var(--secondary-glow);
+            box-shadow: 0 0 15px rgba(var(--secondary-glow), 0.6);
+        }
+
+        .format-option {
+            position: relative;
+            padding: 12px 15px;
+            background: #111;
+            color: #fff;
+            transition: all 0.3s ease;
+        }
+
+        button {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(90deg, var(--primary-glow), var(--secondary-glow));
+            color: #fff;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 5px;
+            text-shadow: 0 0 5px rgba(0, 0, 0, 0.5);
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
+        }
+
+        .output {
+            margin-top: 25px;
+            padding: 20px;
+            background: rgba(0, 0, 0, 0.7);
+            border-radius: 8px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            opacity: 0;
+            height: 0;
+            overflow: hidden;
+            transition: all 0.5s ease;
+        }
+
+        .output.visible {
+            opacity: 1;
+            height: auto;
+            min-height: 100px;
+        }
+
+        .output p {
+            margin: 0 0 10px;
+            font-size: 14px;
+            word-break: break-all;
+        }
+
+        .output-link {
+            padding: 15px;
+            background: rgba(0, 0, 0, 0.9);
+            border-radius: 4px;
+            overflow-x: auto;
+            font-family: monospace;
+            color: #fff;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: rgba(0, 200, 0, 0.8);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 4px;
+            transform: translateX(200%);
+            transition: transform 0.3s ease;
+            z-index: 100;
+        }
+
+        .notification.show {
+            transform: translateX(0);
+        }
+
+        .info-text {
+            margin-top: 20px;
+            font-size: 12px;
+            color: #aaa;
+            text-align: center;
+        }
+
+        .loader {
+            display: none;
+            width: 48px;
+            height: 48px;
+            margin: 20px auto;
+            border: 5px solid rgba(255, 255, 255, 0.2);
+            border-radius: 50%;
+            border-top-color: var(--secondary-glow);
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .discord-button {
+            width: 100%;
+            padding: 14px;
+            background: #7289da;
+            color: #fff;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 20px;
+            text-shadow: 0 0 5px rgba(0, 0, 0, 0.5);
+        }
+        .discord-button:hover{
+            background-color: #5865f2;
+        }
+
+        .copy-button {
+            margin-top: 10px;
+            background: linear-gradient(90deg, #4CAF50, #8BC34A);
+        }
+    </style>
+</head>
+<body>
+    <div class="stars" id="starsContainer"></div>
+    <div class="notification" id="notification">Link copied to clipboard!</div>
+
+    <div class="container">
+        <h1>BLADE HYPERLINK MAKER</h1>
+
+        <div class="form-group">
+            <label for="url">Enter your URL:</label>
+            <input type="text" id="url" placeholder="PUT YOUR LINK HERE">
+        </div>
+
+        <div class="form-group shortener-select">
+            <label for="shortener">URL Shortener Service:</label>
+            <div class="format-select-container">
+                <select id="shortener" class="format-select">
+                    <option value="isgd">is.gd</option>
+                    <option value="tinyurl">TinyURL</option>
+                    <option value="bitly">Bit.ly</option>
+                    <option value="rebrandly">Rebrand.ly</option>
+                    <option value="none">No Shortening</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <div class="format-select-container">
+                <select id="format" class="format-select">
+                    <option value="profile">Roblox Profile</option>
+                    <option value="private-server">Private Server</option>
+                    <option value="group">Group/Community</option>
+                </select>
+                <label for="format" class="format-label">Choose a format:</label>
+            </div>
+        </div>
+
+        <button id="formatButton">Format Hyperlink</button>
+
+        <div class="loader" id="loader"></div>
+        <div class="output" id="output"></div>
+
+        <p class="info-text">This tool creates formatted hyperlinks for use in various platforms.</p>
+        <button class="discord-button" onclick="window.location.href='https://discord.gg/KUuysXwdYM'">JOIN OUR DISCORD</button>
+    </div>
+
+    <script>
+        // Create stars and shooting stars
+        const starsContainer = document.getElementById('starsContainer');
+
+        // Create regular stars
+        for (let i = 0; i < 200; i++) {
+            const star = document.createElement('div');
+            star.className = 'star';
+            star.style.left = `${Math.random() * 100}%`;
+            star.style.top = `${Math.random() * 100}%`;
+            const size = Math.random() * 3;
+            star.style.width = `${size}px`;
+            star.style.height = `${size}px`;
+            star.style.animationDuration = `${Math.random() * 5 + 3}s`;
+            star.style.animationDelay = `${Math.random() * 8}s`;
+            starsContainer.appendChild(star);
+        }
+
+        // Create enhanced shooting stars
+        function createShootingStar() {
+            const star = document.createElement('div');
+            star.className = 'shooting-star';
+
+            // Random starting position
+            const startX = Math.random() * 20;
+            const startY = Math.random() * 20;
+            star.style.left = `${startX}%`;
+            star.style.top = `${startY}%`;
+
+            // Random size and speed
+            const width = Math.random() * 100 + 50;
+            star.style.width = `${width}px`;
+            const duration = Math.random() * 3 + 2;
+            star.style.animationDuration = `${duration}s`;
+
+            // Random angle between 30 and 60 degrees
+            const angle = Math.random() * 30 + 30;
+            star.style.transform = `rotate(${angle}deg)`;
+
+            starsContainer.appendChild(star);
+
+            // Remove star after animation and create new one
+            setTimeout(() => {
+                star.remove();
+                createShootingStar();
+            }, duration * 1000);
+        }
+
+        // Create initial shooting stars
+        for (let i = 0; i < 5; i++) {
+            setTimeout(() => {
+                createShootingStar();
+            }, i * 1500);
+        }
+
+        // URL shortening with multiple services
+        async function shortenUrl(longUrl, service) {
+            // Input validation
+            if (!longUrl.startsWith('http://') && !longUrl.startsWith('https://')) {
+                longUrl = 'https://' + longUrl;
+            }
+
+            // If no shortening selected, return original URL
+            if (service === 'none') {
+                return longUrl;
+            }
+
+            try {
+                switch (service) {
+                    case 'isgd':
+                        return await shortenWithIsGd(longUrl);
+                    case 'tinyurl':
+                        return await shortenWithTinyUrl(longUrl);
+                    case 'bitly':
+                        return await shortenWithBitly(longUrl);
+                    case 'rebrandly':
+                        return await shortenWithRebrandly(longUrl);
+                    default:
+                        return longUrl;
+                }
+            } catch (error) {
+                console.error('Error shortening URL:', error);
+                // Return original URL if shortening fails
+                return longUrl;
+            }
+        }
+
+        // is.gd shortener
+        async function shortenWithIsGd(longUrl) {
+            const apiUrl = `https://is.gd/create.php?format=json&url=${encodeURIComponent(longUrl)}`;
+            const response = await fetch(apiUrl);
+
+            if (!response.ok) {
+                throw new Error(`is.gd API Error: ${response.status}`);
+            }
+
+            const data = await response.json();
+
+            if (data.shorturl) {
+                return data.shorturl;
+            } else {
+                throw new Error(data.errormessage || 'Failed to shorten URL with is.gd');
+            }
+        }
+
+        // TinyURL shortener
+        async function shortenWithTinyUrl(longUrl) {
+            const apiUrl = `https://tinyurl.com/api-create.php?url=${encodeURIComponent(longUrl)}`;
+            const response = await fetch(apiUrl);
+
+            if (!response.ok) {
+                throw new Error(`TinyURL API Error: ${response.status}`);
+            }
+
+            const shortUrl = await response.text();
+            return shortUrl;
+        }
+
+        // Bit.ly shortener (note: would require API key in production)
+        async function shortenWithBitly(longUrl) {
+            // Simulation for demo purposes
+            // In production, this would use the Bit.ly API with an API key
+            return `https://bit.ly/${generateRandomString(7)}`;
+        }
+
+        // Rebrand.ly shortener (note: would require API key in production)
+        async function shortenWithRebrandly(longUrl) {
+            // Simulation for demo purposes
+            // In production, this would use the Rebrand.ly API with an API key
+            return `https://rebrand.ly/${generateRandomString(8)}`;
+        }
+
+        // Helper function to generate random strings for demo shorteners
+        function generateRandomString(length) {
+            const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+            let result = '';
+            for (let i = 0; i < length; i++) {
+                result += characters.charAt(Math.floor(Math.random() * characters.length));
+            }
+            return result;
+        }
+
+        async function formatLink() {
+            const url = document.getElementById('url').value.trim();
+            const shortenerService = document.getElementById('shortener').value;
+            const formatType = document.getElementById('format').value;
+            const loader = document.getElementById('loader');
+            const output = document.getElementById('output');
+
+            // Validate input
+            if (!url) {
+                showNotification('Please enter a valid URL', 'error');
+                return;
+            }
+
+            // Show loader
+            loader.style.display = 'block';
+            output.classList.remove('visible');
+
+            try {
+                const shortUrl = await shortenUrl(url, shortenerService);
+
+                // Define format templates based on your requirements
+                let formattedLink;
+                switch (formatType) {
+                    case 'profile':
+                        formattedLink = `[https_:_//www.roblox.com/users/6700452/profile](${shortUrl})`;
+                        break;
+                    case 'private-server':
+                        formattedLink = `[https_:_//www.roblox.com/share?code=9b3bf13e5fe0894d941ac87ac52f8d1d&type=Server](${shortUrl})`;
+                        break;
+                    case 'group':
+                        formattedLink = `[https_:_//www.roblox.com/groups/7429401045](${shortUrl})`;
+                        break;
+                    default:
+                        formattedLink = shortUrl;
+                }
+
+                // Display results
+                output.innerHTML = `
+                    <p><strong>Your Formatted Hyperlink:</strong></p>
+                    <div class="output-link">${formattedLink}</div>
+                    <button id="copyButton" class="copy-button">Copy to Clipboard</button>
+                `;
+
+                // Setup copy button
+                document.getElementById('copyButton').addEventListener('click', () => {
+                    navigator.clipboard.writeText(formattedLink)
+                        .then(() => showNotification('Link copied to clipboard!'))
+                        .catch(() => showNotification('Failed to copy link', 'error'));
+                });
+
+                // Show output
+                output.classList.add('visible');
+            } catch (error) {
+                output.innerHTML = `
+                    <p><strong>Error:</strong> ${error.message}</p>
+                    <p>Please try again with a different URL or shortener service.</p>
+                `;
+                output.classList.add('visible');
+            } finally {
+                // Hide loader
+                loader.style.display = 'none';
+            }
+        }
+
+        function showNotification(message, type = 'success') {
+            const notification = document.getElementById('notification');
+            notification.textContent = message;
+            notification.style.background = type === 'success' ? 'rgba(0, 200, 0, 0.8)' : 'rgba(200, 0, 0, 0.8)';
+
+            notification.classList.add('show');
+
+            setTimeout(() => {
+                notification.classList.remove('show');
+            }, 3000);
+        }
+
+        // Event listeners
+        document.getElementById('formatButton').addEventListener('click', formatLink);
+
+        // Allow Enter key to submit
+        document.getElementById('url').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                formatLink();
+            }
+        });
+    </script>
+</body>
+</html>
